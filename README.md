@@ -38,23 +38,16 @@ MergeLens can enhance TL;DR with an LLM when credentials are provided.
 
 Set `MERGELENS_AI_PROVIDER` (GitHub variable):
 - `openai` (default)
-- `anthropic`
-- `xai`
+- `grok`
+- `antropic`
 
 ### Secrets / variables
 
-- OpenAI:
-  - Secret: `OPENAI_API_KEY`
-  - Variable (optional): `MERGELENS_OPENAI_MODEL`
-- Anthropic:
-  - Secret: `ANTHROPIC_API_KEY`
-  - Variable (optional): `MERGELENS_ANTHROPIC_MODEL`
-- xAI (Grok):
-  - Secret: `XAI_API_KEY`
-  - Variable (optional): `MERGELENS_XAI_MODEL`
-
-Also supported for backward compatibility:
-- `MERGELENS_LLM_MODEL` (generic model override)
+- `MERGELENS_AI_MODEL` (GitHub variable, optional): model name for the selected provider
+- Provider secrets:
+  - OpenAI: `OPENAI_API_KEY`
+  - Antropic: `ANTHROPIC_API_KEY`
+  - Grok/xAI: `XAI_API_KEY`
 
 Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
 

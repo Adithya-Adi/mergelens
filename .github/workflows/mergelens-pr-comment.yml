@@ -30,10 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MERGELENS_AI_PROVIDER: ${{ vars.MERGELENS_AI_PROVIDER }}
+          MERGELENS_AI_MODEL: ${{ vars.MERGELENS_AI_MODEL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          MERGELENS_LLM_MODEL: ${{ vars.MERGELENS_LLM_MODEL }}
-          MERGELENS_OPENAI_MODEL: ${{ vars.MERGELENS_OPENAI_MODEL }}
-          MERGELENS_ANTHROPIC_MODEL: ${{ vars.MERGELENS_ANTHROPIC_MODEL }}
-          MERGELENS_XAI_MODEL: ${{ vars.MERGELENS_XAI_MODEL }}

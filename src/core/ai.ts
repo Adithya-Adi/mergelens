@@ -5,7 +5,7 @@ export type SummaryResult = {
   source: "heuristic" | "llm";
 };
 
-type Provider = "openai" | "anthropic" | "xai";
+type Provider = "openai" | "antropic" | "grok";
 
 function buildPrompt(pr: PullRequestData): string {
   const filesPreview = pr.files
@@ -34,15 +34,20 @@ function buildPrompt(pr: PullRequestData): string {
 
 function getProvider(): Provider {
   const provider = (process.env.MERGELENS_AI_PROVIDER ?? "openai").toLowerCase();
-  if (provider === "anthropic" || provider === "xai") return provider;
+  if (provider === "grok") return "grok";
+  if (provider === "antropic" || provider === "anthropic") return "antropic";
   return "openai";
+}
+
+function getModel(defaultModel: string): string {
+  return process.env.MERGELENS_AI_MODEL ?? process.env.MERGELENS_LLM_MODEL ?? defaultModel;
 }
 
 async function callOpenAI(prompt: string): Promise<string | undefined> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return undefined;
 
-  const model = process.env.MERGELENS_OPENAI_MODEL ?? process.env.MERGELENS_LLM_MODEL ?? "gpt-4.1-mini";
+  const model = getModel("gpt-4.1-mini");
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -64,11 +69,11 @@ async function callOpenAI(prompt: string): Promise<string | undefined> {
   return data.choices?.[0]?.message?.content?.trim();
 }
 
-async function callAnthropic(prompt: string): Promise<string | undefined> {
+async function callAntropic(prompt: string): Promise<string | undefined> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return undefined;
 
-  const model = process.env.MERGELENS_ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest";
+  const model = getModel("claude-3-5-sonnet-latest");
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -93,11 +98,11 @@ async function callAnthropic(prompt: string): Promise<string | undefined> {
   return textBlock?.text?.trim();
 }
 
-async function callXAI(prompt: string): Promise<string | undefined> {
+async function callGrok(prompt: string): Promise<string | undefined> {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) return undefined;
 
-  const model = process.env.MERGELENS_XAI_MODEL ?? "grok-3-mini";
+  const model = getModel("grok-3-mini");
 
   const response = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
@@ -128,10 +133,10 @@ export async function generateEnhancedSummary(
 
   try {
     const content =
-      provider === "anthropic"
-        ? await callAnthropic(prompt)
-        : provider === "xai"
-          ? await callXAI(prompt)
+      provider === "antropic"
+        ? await callAntropic(prompt)
+        : provider === "grok"
+          ? await callGrok(prompt)
           : await callOpenAI(prompt);
 
     if (!content) {
