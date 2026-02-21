@@ -4,7 +4,7 @@ MergeLens is a GitHub-native PR explainer that summarizes pull requests, highlig
 
 ## Status
 
-🚧 Project initialized. Bootstrap GitHub Action now posts/updates a sticky PR comment with basic change stats.
+🚧 Project initialized. GitHub Action is wired to MergeLens core analyzer and posts/updates a sticky PR comment on each PR update.
 
 ## Planned milestones
 
