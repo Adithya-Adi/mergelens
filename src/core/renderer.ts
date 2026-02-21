@@ -34,6 +34,7 @@ export function renderMarkdownReport(
     `**PR:** #${pr.number} - ${pr.title}`,
     `**Repository:** ${pr.repository}`,
     `**Risk level:** ${riskBadge(analysis.riskLevel)}`,
+    `**Summary source:** ${analysis.summarySource === "llm" ? "🤖 LLM" : "🧠 Heuristic fallback"}`,
     "",
     "### TL;DR",
     analysis.summary,

@@ -27,6 +27,7 @@ export type AnalysisFinding = {
 
 export type PullRequestAnalysis = {
   summary: string;
+  summarySource: "heuristic" | "llm";
   riskLevel: RiskLevel;
   totals: {
     files: number;

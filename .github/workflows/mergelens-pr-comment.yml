@@ -29,3 +29,5 @@ jobs:
         run: node dist/action/run.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MERGELENS_LLM_MODEL: ${{ vars.MERGELENS_LLM_MODEL }}

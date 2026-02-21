@@ -114,6 +114,7 @@ export function analyzePullRequest(
 
   return {
     summary,
+    summarySource: "heuristic",
     riskLevel,
     totals,
     findings,

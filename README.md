@@ -30,6 +30,14 @@ You can customize behavior with `mergelens.config.json` at repo root.
 
 Start from `mergelens.config.example.json`.
 
+## Optional AI summary
+
+MergeLens can enhance TL;DR with an LLM when credentials are provided.
+
+- `OPENAI_API_KEY` (GitHub secret) enables AI summary mode
+- `MERGELENS_LLM_MODEL` (GitHub variable, optional) overrides default model
+- Without key or on API failure, MergeLens automatically falls back to heuristic summary
+
 ## Quickstart
 
 ```bash

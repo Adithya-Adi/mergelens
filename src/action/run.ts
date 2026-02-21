@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 
+import { generateEnhancedSummary } from "../core/ai.js";
 import { analyzePullRequest } from "../core/analyzer.js";
 import { loadConfig, shouldExclude } from "../core/config.js";
 import { renderMarkdownReport } from "../core/renderer.js";
@@ -52,7 +53,12 @@ async function run(): Promise<void> {
   };
 
   const analysis = analyzePullRequest(prData, { config });
-  const body = renderMarkdownReport(prData, analysis);
+  const enhanced = await generateEnhancedSummary(prData, analysis.summary);
+  const body = renderMarkdownReport(prData, {
+    ...analysis,
+    summary: enhanced.summary,
+    summarySource: enhanced.source
+  });
 
   const comments = await octokit.paginate(octokit.rest.issues.listComments, {
     owner,
