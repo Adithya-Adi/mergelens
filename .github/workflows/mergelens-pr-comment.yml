@@ -29,5 +29,8 @@ jobs:
         run: node dist/action/run.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGELENS_AI_PROVIDER: ${{ vars.MERGELENS_AI_PROVIDER }}
+          MERGELENS_AI_MODEL: ${{ vars.MERGELENS_AI_MODEL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          MERGELENS_LLM_MODEL: ${{ vars.MERGELENS_LLM_MODEL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}

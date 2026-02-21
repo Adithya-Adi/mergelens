@@ -34,9 +34,22 @@ Start from `mergelens.config.example.json`.
 
 MergeLens can enhance TL;DR with an LLM when credentials are provided.
 
-- `OPENAI_API_KEY` (GitHub secret) enables AI summary mode
-- `MERGELENS_LLM_MODEL` (GitHub variable, optional) overrides default model
-- Without key or on API failure, MergeLens automatically falls back to heuristic summary
+### Provider selection
+
+Set `MERGELENS_AI_PROVIDER` (GitHub variable):
+- `openai` (default)
+- `grok`
+- `antropic`
+
+### Secrets / variables
+
+- `MERGELENS_AI_MODEL` (GitHub variable, optional): model name for the selected provider
+- Provider secrets:
+  - OpenAI: `OPENAI_API_KEY`
+  - Antropic: `ANTHROPIC_API_KEY`
+  - Grok/xAI: `XAI_API_KEY`
+
+Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
 
 ## Quickstart
 

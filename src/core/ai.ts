@@ -5,6 +5,8 @@ export type SummaryResult = {
   source: "heuristic" | "llm";
 };
 
+type Provider = "openai" | "antropic" | "grok";
+
 function buildPrompt(pr: PullRequestData): string {
   const filesPreview = pr.files
     .slice(0, 25)
@@ -30,39 +32,112 @@ function buildPrompt(pr: PullRequestData): string {
   ].join("\n");
 }
 
+function getProvider(): Provider {
+  const provider = (process.env.MERGELENS_AI_PROVIDER ?? "openai").toLowerCase();
+  if (provider === "grok") return "grok";
+  if (provider === "antropic" || provider === "anthropic") return "antropic";
+  return "openai";
+}
+
+function getModel(defaultModel: string): string {
+  return process.env.MERGELENS_AI_MODEL ?? process.env.MERGELENS_LLM_MODEL ?? defaultModel;
+}
+
+async function callOpenAI(prompt: string): Promise<string | undefined> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return undefined;
+
+  const model = getModel("gpt-4.1-mini");
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  if (!response.ok) return undefined;
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return data.choices?.[0]?.message?.content?.trim();
+}
+
+async function callAntropic(prompt: string): Promise<string | undefined> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return undefined;
+
+  const model = getModel("claude-3-5-sonnet-latest");
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 220,
+      temperature: 0.2,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  if (!response.ok) return undefined;
+  const data = (await response.json()) as {
+    content?: Array<{ type?: string; text?: string }>;
+  };
+  const textBlock = data.content?.find((item) => item.type === "text");
+  return textBlock?.text?.trim();
+}
+
+async function callGrok(prompt: string): Promise<string | undefined> {
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) return undefined;
+
+  const model = getModel("grok-3-mini");
+
+  const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  if (!response.ok) return undefined;
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return data.choices?.[0]?.message?.content?.trim();
+}
+
 export async function generateEnhancedSummary(
   pr: PullRequestData,
   fallbackSummary: string
 ): Promise<SummaryResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return { summary: fallbackSummary, source: "heuristic" };
-  }
-
-  const model = process.env.MERGELENS_LLM_MODEL ?? "gpt-4.1-mini";
+  const prompt = buildPrompt(pr);
+  const provider = getProvider();
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        messages: [{ role: "user", content: buildPrompt(pr) }]
-      })
-    });
-
-    if (!response.ok) {
-      return { summary: fallbackSummary, source: "heuristic" };
-    }
-
-    const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content?.trim();
+    const content =
+      provider === "antropic"
+        ? await callAntropic(prompt)
+        : provider === "grok"
+          ? await callGrok(prompt)
+          : await callOpenAI(prompt);
 
     if (!content) {
       return { summary: fallbackSummary, source: "heuristic" };
