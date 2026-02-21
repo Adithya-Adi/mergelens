@@ -5,7 +5,7 @@ export type SummaryResult = {
   source: "heuristic" | "llm";
 };
 
-type Provider = "openai" | "antropic" | "grok";
+type Provider = "openai" | "antropic" | "grok" | "groq";
 
 function buildPrompt(pr: PullRequestData): string {
   const filesPreview = pr.files
@@ -34,7 +34,8 @@ function buildPrompt(pr: PullRequestData): string {
 
 function getProvider(): Provider {
   const provider = (process.env.MERGELENS_AI_PROVIDER ?? "openai").toLowerCase();
-  if (provider === "grok") return "grok";
+  if (provider === "groq") return "groq";
+  if (provider === "grok" || provider === "xai") return "grok";
   if (provider === "antropic" || provider === "anthropic") return "antropic";
   return "openai";
 }
@@ -124,6 +125,32 @@ async function callGrok(prompt: string): Promise<string | undefined> {
   return data.choices?.[0]?.message?.content?.trim();
 }
 
+async function callGroq(prompt: string): Promise<string | undefined> {
+  const apiKey = process.env.GROQ_API_KEY ?? process.env.XAI_API_KEY;
+  if (!apiKey) return undefined;
+
+  const model = getModel("llama-3.1-8b-instant");
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  if (!response.ok) return undefined;
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return data.choices?.[0]?.message?.content?.trim();
+}
+
 export async function generateEnhancedSummary(
   pr: PullRequestData,
   fallbackSummary: string
@@ -137,7 +164,9 @@ export async function generateEnhancedSummary(
         ? await callAntropic(prompt)
         : provider === "grok"
           ? await callGrok(prompt)
-          : await callOpenAI(prompt);
+          : provider === "groq"
+            ? await callGroq(prompt)
+            : await callOpenAI(prompt);
 
     if (!content) {
       return { summary: fallbackSummary, source: "heuristic" };
