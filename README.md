@@ -38,7 +38,8 @@ MergeLens can enhance TL;DR with an LLM when credentials are provided.
 
 Set `MERGELENS_AI_PROVIDER` (GitHub variable):
 - `openai` (default)
-- `grok`
+- `grok` (xAI)
+- `groq`
 - `antropic`
 
 ### Secrets / variables
@@ -48,6 +49,7 @@ Set `MERGELENS_AI_PROVIDER` (GitHub variable):
   - OpenAI: `OPENAI_API_KEY`
   - Antropic: `ANTHROPIC_API_KEY`
   - Grok/xAI: `XAI_API_KEY`
+  - Groq: `GROQ_API_KEY`
 
 Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
 
@@ -76,6 +78,7 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           xai-api-key: ${{ secrets.XAI_API_KEY }}
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
 ```
 
 Use `@main` or a branch ref before the first tagged release.

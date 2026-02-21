@@ -9,7 +9,7 @@ inputs:
     description: GitHub token for reading PR data and writing comments
     required: true
   ai-provider:
-    description: AI provider (openai | grok | antropic)
+    description: AI provider (openai | grok | groq | antropic)
     required: false
     default: openai
   ai-model:
@@ -23,6 +23,9 @@ inputs:
     required: false
   xai-api-key:
     description: xAI API key (required if ai-provider=grok)
+    required: false
+  groq-api-key:
+    description: Groq API key (required if ai-provider=groq)
     required: false
 
 runs:
@@ -53,3 +56,4 @@ runs:
         OPENAI_API_KEY: ${{ inputs.openai-api-key }}
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         XAI_API_KEY: ${{ inputs.xai-api-key }}
+        GROQ_API_KEY: ${{ inputs.groq-api-key }}

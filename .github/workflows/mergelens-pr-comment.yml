@@ -23,3 +23,4 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           xai-api-key: ${{ secrets.XAI_API_KEY }}
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
