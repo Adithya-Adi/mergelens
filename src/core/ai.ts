@@ -126,7 +126,7 @@ async function callGrok(prompt: string): Promise<string | undefined> {
 }
 
 async function callGroq(prompt: string): Promise<string | undefined> {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY ?? process.env.XAI_API_KEY;
   if (!apiKey) return undefined;
 
   const model = getModel("llama-3.1-8b-instant");

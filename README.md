@@ -49,7 +49,7 @@ Set `MERGELENS_AI_PROVIDER` (GitHub variable):
   - OpenAI: `OPENAI_API_KEY`
   - Antropic: `ANTHROPIC_API_KEY`
   - Grok/xAI: `XAI_API_KEY`
-  - Groq: `GROQ_API_KEY`
+  - Groq: `GROQ_API_KEY` (falls back to `XAI_API_KEY` if needed)
 
 Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
 
