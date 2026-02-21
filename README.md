@@ -51,7 +51,36 @@ Set `MERGELENS_AI_PROVIDER` (GitHub variable):
 
 Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
 
-## Quickstart
+## GitHub Action usage
+
+```yaml
+name: MergeLens
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  mergelens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Adithya-Adi/mergelens@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ai-provider: ${{ vars.MERGELENS_AI_PROVIDER }}
+          ai-model: ${{ vars.MERGELENS_AI_MODEL }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          xai-api-key: ${{ secrets.XAI_API_KEY }}
+```
+
+Use `@main` or a branch ref before the first tagged release.
+
+## Quickstart (local dev)
 
 ```bash
 npm install

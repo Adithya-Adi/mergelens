@@ -14,23 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Run MergeLens (dogfood)
+        uses: ./
         with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build MergeLens
-        run: npm run build
-
-      - name: Run MergeLens analyzer
-        run: node dist/action/run.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGELENS_AI_PROVIDER: ${{ vars.MERGELENS_AI_PROVIDER }}
-          MERGELENS_AI_MODEL: ${{ vars.MERGELENS_AI_MODEL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ai-provider: ${{ vars.MERGELENS_AI_PROVIDER }}
+          ai-model: ${{ vars.MERGELENS_AI_MODEL }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          xai-api-key: ${{ secrets.XAI_API_KEY }}
