@@ -17,8 +17,18 @@ MergeLens is a GitHub-native PR explainer that summarizes pull requests, highlig
 
 MergeLens now exposes a reusable TypeScript core:
 
-- `analyzePullRequest(pr)` → baseline heuristic analysis
+- `analyzePullRequest(pr, { config })` → baseline heuristic analysis
 - `renderMarkdownReport(pr, analysis)` → PR-ready markdown output
+
+## Repository config
+
+You can customize behavior with `mergelens.config.json` at repo root.
+
+- `exclude`: glob patterns ignored from analysis
+- `sensitivePathPatterns`: regex strings used to flag sensitive paths
+- `thresholds`: medium/high size and missing-test thresholds
+
+Start from `mergelens.config.example.json`.
 
 ## Quickstart
 

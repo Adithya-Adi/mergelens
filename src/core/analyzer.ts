@@ -4,15 +4,11 @@ import type {
   PullRequestData,
   RiskLevel
 } from "./types.js";
+import type { ResolvedMergeLensConfig } from "./config.js";
 
-const SENSITIVE_PATH_PATTERNS = [
-  /auth/i,
-  /permission/i,
-  /payment/i,
-  /secret/i,
-  /token/i,
-  /infra/i
-];
+type AnalyzeOptions = {
+  config: ResolvedMergeLensConfig;
+};
 
 function maxSeverity(current: RiskLevel, candidate: RiskLevel): RiskLevel {
   const rank: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
@@ -23,7 +19,12 @@ function hasTestFile(paths: string[]): boolean {
   return paths.some((path) => /test|spec|__tests__/i.test(path));
 }
 
-export function analyzePullRequest(pr: PullRequestData): PullRequestAnalysis {
+export function analyzePullRequest(
+  pr: PullRequestData,
+  options: AnalyzeOptions
+): PullRequestAnalysis {
+  const { config } = options;
+
   const totals = pr.files.reduce(
     (acc, file) => {
       acc.files += 1;
@@ -37,7 +38,10 @@ export function analyzePullRequest(pr: PullRequestData): PullRequestAnalysis {
   const findings: AnalysisFinding[] = [];
   let riskLevel: RiskLevel = "low";
 
-  if (totals.files > 30 || totals.additions + totals.deletions > 1000) {
+  if (
+    totals.files > config.thresholds.highFiles ||
+    totals.additions + totals.deletions > config.thresholds.highChanges
+  ) {
     findings.push({
       id: "large-pr",
       title: "Large pull request",
@@ -46,7 +50,10 @@ export function analyzePullRequest(pr: PullRequestData): PullRequestAnalysis {
       severity: "high"
     });
     riskLevel = maxSeverity(riskLevel, "high");
-  } else if (totals.files > 12 || totals.additions + totals.deletions > 400) {
+  } else if (
+    totals.files > config.thresholds.mediumFiles ||
+    totals.additions + totals.deletions > config.thresholds.mediumChanges
+  ) {
     findings.push({
       id: "medium-size-pr",
       title: "Moderate-sized pull request",
@@ -57,11 +64,13 @@ export function analyzePullRequest(pr: PullRequestData): PullRequestAnalysis {
     riskLevel = maxSeverity(riskLevel, "medium");
   }
 
+  const sensitiveMatchers = config.sensitivePathPatterns.map(
+    (pattern) => new RegExp(pattern, "i")
+  );
+
   const sensitiveFiles = pr.files
     .map((file) => file.path)
-    .filter((path) =>
-      SENSITIVE_PATH_PATTERNS.some((pattern) => pattern.test(path))
-    );
+    .filter((path) => sensitiveMatchers.some((pattern) => pattern.test(path)));
 
   if (sensitiveFiles.length > 0) {
     findings.push({
@@ -75,7 +84,10 @@ export function analyzePullRequest(pr: PullRequestData): PullRequestAnalysis {
     riskLevel = maxSeverity(riskLevel, "high");
   }
 
-  if (!hasTestFile(pr.files.map((file) => file.path)) && totals.additions > 80) {
+  if (
+    !hasTestFile(pr.files.map((file) => file.path)) &&
+    totals.additions > config.thresholds.missingTestsMinAdditions
+  ) {
     findings.push({
       id: "missing-tests",
       title: "No test files detected",
