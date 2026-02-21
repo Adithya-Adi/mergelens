@@ -13,6 +13,13 @@ MergeLens is a GitHub-native PR explainer that summarizes pull requests, highlig
 3. Post/update sticky PR comment
 4. Add config support (`mergelens.config.json`)
 
+## Core module (new)
+
+MergeLens now exposes a reusable TypeScript core:
+
+- `analyzePullRequest(pr)` → baseline heuristic analysis
+- `renderMarkdownReport(pr, analysis)` → PR-ready markdown output
+
 ## Quickstart
 
 ```bash
