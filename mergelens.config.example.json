@@ -1,0 +1,11 @@
+{
+  "exclude": ["**/*.lock", "**/dist/**", "**/__snapshots__/**"],
+  "sensitivePathPatterns": ["auth", "permission", "payment", "secret", "token", "infra"],
+  "thresholds": {
+    "mediumFiles": 12,
+    "highFiles": 30,
+    "mediumChanges": 400,
+    "highChanges": 1000,
+    "missingTestsMinAdditions": 80
+  }
+}

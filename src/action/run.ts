@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 import { analyzePullRequest } from "../core/analyzer.js";
+import { loadConfig, shouldExclude } from "../core/config.js";
 import { renderMarkdownReport } from "../core/renderer.js";
 import type { PullRequestData } from "../core/types.js";
 
@@ -23,6 +24,7 @@ async function run(): Promise<void> {
   const octokit = github.getOctokit(token);
   const { owner, repo } = context.repo;
   const pull_number = pullRequest.number;
+  const config = loadConfig(process.cwd());
 
   const files = await octokit.paginate(octokit.rest.pulls.listFiles, {
     owner,
@@ -39,15 +41,17 @@ async function run(): Promise<void> {
     author: pullRequest.user?.login ?? "unknown",
     baseRef: pullRequest.base.ref,
     headRef: pullRequest.head.ref,
-    files: files.map((file) => ({
-      path: file.filename,
-      additions: file.additions,
-      deletions: file.deletions,
-      patch: file.patch ?? undefined
-    }))
+    files: files
+      .filter((file) => !shouldExclude(file.filename, config.exclude))
+      .map((file) => ({
+        path: file.filename,
+        additions: file.additions,
+        deletions: file.deletions,
+        patch: file.patch ?? undefined
+      }))
   };
 
-  const analysis = analyzePullRequest(prData);
+  const analysis = analyzePullRequest(prData, { config });
   const body = renderMarkdownReport(prData, analysis);
 
   const comments = await octokit.paginate(octokit.rest.issues.listComments, {
