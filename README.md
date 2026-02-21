@@ -1,62 +1,20 @@
 # MergeLens
 
-MergeLens is a GitHub-native PR explainer that summarizes pull requests, highlights risk hotspots, and posts a reviewer-friendly comment directly in the PR.
+MergeLens is a GitHub Action that explains pull requests with:
+- clear TL;DR summaries,
+- change/risk signals,
+- reviewer checklists,
+- and a sticky PR comment that updates on every push.
 
-## Status
+---
 
-🚧 Project initialized. GitHub Action is wired to MergeLens core analyzer and posts/updates a sticky PR comment on each PR update.
+## Install in any repository
 
-## Planned milestones
-
-1. Parse PR metadata + changed files from GitHub API
-2. Generate concise AI summary + risk checklist
-3. Post/update sticky PR comment
-4. Add config support (`mergelens.config.json`)
-
-## Core module (new)
-
-MergeLens now exposes a reusable TypeScript core:
-
-- `analyzePullRequest(pr, { config })` → baseline heuristic analysis
-- `renderMarkdownReport(pr, analysis)` → PR-ready markdown output
-
-## Repository config
-
-You can customize behavior with `mergelens.config.json` at repo root.
-
-- `exclude`: glob patterns ignored from analysis
-- `sensitivePathPatterns`: regex strings used to flag sensitive paths
-- `thresholds`: medium/high size and missing-test thresholds
-
-Start from `mergelens.config.example.json`.
-
-## Optional AI summary
-
-MergeLens can enhance TL;DR with an LLM when credentials are provided.
-
-### Provider selection
-
-Set `MERGELENS_AI_PROVIDER` (GitHub variable):
-- `openai` (default)
-- `grok` (xAI)
-- `groq`
-- `antropic`
-
-### Secrets / variables
-
-- `MERGELENS_AI_MODEL` (GitHub variable, optional): model name for the selected provider
-- Provider secrets:
-  - OpenAI: `OPENAI_API_KEY`
-  - Antropic: `ANTHROPIC_API_KEY`
-  - Grok/xAI: `XAI_API_KEY`
-  - Groq: `GROQ_API_KEY` (falls back to `XAI_API_KEY` if needed)
-
-Without valid provider credentials, or on API failure, MergeLens automatically falls back to heuristic summary.
-
-## GitHub Action usage
+Create `.github/workflows/mergelens.yml`:
 
 ```yaml
-name: MergeLens
+name: MergeLens PR Comment
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -70,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: Adithya-Adi/mergelens@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,16 +40,88 @@ jobs:
           groq-api-key: ${{ secrets.GROQ_API_KEY }}
 ```
 
-Use `@main` or a branch ref before the first tagged release.
+That’s enough to start posting comments on PRs.
 
-## Quickstart (local dev)
+---
+
+## AI provider configuration
+
+Set `MERGELENS_AI_PROVIDER` (Repository Variable):
+- `openai` (default)
+- `antropic`
+- `grok` (xAI)
+- `groq`
+
+Set `MERGELENS_AI_MODEL` (Repository Variable, optional):
+- model name for the selected provider
+
+Set provider secret(s) (Repository Secrets):
+- OpenAI: `OPENAI_API_KEY`
+- Antropic: `ANTHROPIC_API_KEY`
+- xAI/Grok: `XAI_API_KEY`
+- Groq: `GROQ_API_KEY`
+
+> If AI credentials are missing/invalid or the provider call fails, MergeLens automatically falls back to heuristic summary mode.
+
+---
+
+## Repository-level tuning
+
+You can customize behavior using `mergelens.config.json` at repo root.
+
+Example:
+
+```json
+{
+  "exclude": ["**/*.lock", "**/dist/**", "**/__snapshots__/**"],
+  "sensitivePathPatterns": ["auth", "permission", "payment", "secret", "token", "infra"],
+  "thresholds": {
+    "mediumFiles": 12,
+    "highFiles": 30,
+    "mediumChanges": 400,
+    "highChanges": 1000,
+    "missingTestsMinAdditions": 80
+  }
+}
+```
+
+Fields:
+- `exclude`: file globs to skip from analysis
+- `sensitivePathPatterns`: path patterns to flag high-risk areas
+- `thresholds`: PR size and missing-test detection limits
+
+---
+
+## Output in PR
+
+MergeLens adds/updates one sticky comment containing:
+- PR overview + risk level
+- TL;DR (LLM or heuristic fallback)
+- file/addition/deletion stats
+- risk findings
+- reviewer checklist
+
+---
+
+## Local development
 
 ```bash
 npm install
 npm run check
+npm run build
 npm run dev
 ```
 
-## Vision
+---
 
-Understand every pull request in seconds.
+## Next steps
+
+- Add safe debug mode for AI fallback reasons (without exposing secrets).
+- Add inline per-file highlights for large PRs.
+- Add optional fail-on-high-risk gate for protected branches.
+- Add support for ignoring bot-generated files by default.
+- Add richer release notes + changelog automation.
+
+---
+
+**Vision:** Understand every pull request in seconds.
